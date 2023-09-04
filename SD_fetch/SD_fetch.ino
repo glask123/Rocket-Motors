@@ -23,6 +23,8 @@
 
 File myFile;
 
+
+
 void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -43,7 +45,7 @@ void setup() {
   // so you have to close this one before opening another.
 
   // re-open the file for reading:
-  myFile = SD.open("aug11.txt");
+  myFile = SD.open("aug18test1.txt");
   if (myFile) {
     Serial.println("test.txt:");
 
@@ -53,7 +55,6 @@ void setup() {
     }
     // close the file:
     myFile.close();
-    SD.remove("aug11.txt");
 
   } else {
     // if the file didn't open, print an error:

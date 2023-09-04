@@ -12,11 +12,9 @@ enum states {
 
 enum states SYS_STATE;
 
-int bluLED = 14;
-int redLED = 15;
-int grnLED = 16;
-
-int32_t roll_avg_arr[10];
+int bluLED = 5;
+int redLED = 7;
+int grnLED = 6;
 
 File data_file;
 
@@ -46,7 +44,7 @@ void setup() {
 
   nau.setLDO(NAU7802_3V0);
   nau.setGain(NAU7802_GAIN_128);
-  nau.setRate(NAU7802_RATE_10SPS);
+  nau.setRate(NAU7802_RATE_320SPS);
 
   for (uint8_t i=0; i<10; i++) {
     while (! nau.available()){
@@ -56,7 +54,6 @@ void setup() {
       delay(100);
     } 
     int32_t val = nau.read();
-    roll_avg_arr[i] = val;
     digitalWrite(bluLED, LOW);
     digitalWrite(redLED, HIGH);
   }
@@ -80,7 +77,7 @@ void setup() {
   Serial.println("Calibrated system offset");
   digitalWrite(bluLED, LOW);
   digitalWrite(redLED, HIGH);
-
+  /*
   if (!SD.begin(0)) {
     Serial.println("Failed to connect to SD card");
     while (1){
@@ -90,7 +87,7 @@ void setup() {
   } else {
     Serial.println("Connected to SD card");
   }
-  data_file = SD.open("aug11.txt", FILE_WRITE);
+  data_file = SD.open("aug18test2.txt", FILE_WRITE);
   if (data_file) {
     data_file.println("TIME (ms), FORCE (N)");
   } else {
@@ -98,6 +95,7 @@ void setup() {
     digitalWrite(bluLED, HIGH);
     digitalWrite(redLED, LOW);
   }
+  */
   digitalWrite(bluLED, LOW);
   digitalWrite(redLED, HIGH);
 
@@ -137,8 +135,8 @@ void setup() {
 
 int k = 0;
 
-int32_t data[20];
-//unsigned long time[20];
+int32_t data_arr[20];
+unsigned long time_arr[20];
 
 void loop() {
   if (SYS_STATE == READ){
@@ -149,25 +147,41 @@ void loop() {
     int32_t val = nau.read();
     unsigned long read_time = millis();
 
-    data[k] = val;
-    //time[k] = read_time;
-    k = k + 1;
+    data_arr[k] = val;
+    time_arr[k] = read_time;
+    
 
     if (k == 19){
       for (int j = 0; j < 20; j++){
-        //unsigned long adjusted_time = time[j] - start_time;
-        Serial.println("hello");
-        data_file.println(data[j]);
+        unsigned long adjusted_time = time_arr[j] - start_time;
+        //data_file.print(adjusted_time);
+        //data_file.print(", ");
+        //data_file.println(data_arr[j]);
+        Serial.print(adjusted_time);
+        Serial.print(", ");
+        Serial.println(data_arr[j]);
       }
       k = 0;
+    } else {
+      k = k + 1;
     }
+    
     Serial.println(val);
     if (millis() - start_time > 5000){
+      for (int j = 0; j < k; j++){
+        unsigned long adjusted_time = time_arr[j] - start_time;
+        //data_file.print(adjusted_time);
+        //data_file.print(", ");
+        //data_file.println(data_arr[j]);
+        Serial.print(adjusted_time);
+        Serial.print(", ");
+        Serial.println(data_arr[j]);
+      }
       SYS_STATE = POST;
       digitalWrite(bluLED, HIGH);
       digitalWrite(redLED, HIGH);
       digitalWrite(grnLED, LOW);
-      data_file.close();
+      //data_file.close();
       Serial.println("closed");
     }
   } else {
